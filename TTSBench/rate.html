@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate TTS</title>
+  <link rel="stylesheet" href="/public/style.css">
+  <style>
+    /* Styles for centering and message area */
+    .content {
+        text-align: center; /* Center inline/inline-block elements like buttons within their containers */
+        /* If .content is a flex container itself, you might need justify-content: center too */
+    }
+
+    #audioTypeDisplay {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .classification-buttons,
+    .rating-buttons {
+        display: flex; /* Use flexbox for button layout */
+        justify-content: center; /* Center buttons horizontally in the flex container */
+        margin-bottom: 20px; /* Add some space below buttons */
+        gap: 10px; /* Add space between buttons */
+        flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    }
+
+    .classification-button,
+    .ratingButton {
+        /* Your existing button styles */
+        /* Ensure they are not 100% width if you want multiple on a line */
+        padding: 10px 15px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .classification-button.active,
+    .ratingButton.active {
+        background-color: #007bff; /* Example active color */
+        color: white;
+        border-color: #007bff;
+    }
+
+     .submit-button {
+        padding: 10px 20px;
+        cursor: pointer;
+        background-color: #28a745; /* Example submit color */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1em;
+        transition: background-color 0.3s ease;
+     }
+
+     .submit-button:hover {
+        background-color: #218838;
+     }
+
+
+    #noAudioMessage {
+        font-size: 1.1em;
+        color: #555;
+        text-align: center;
+        margin-top: 20px;
+        display: none;
+    }
+
+    #messageArea {
+        margin-top: 15px;
+        min-height: 1.2em; /* Reserve space to prevent layout shifts */
+        color: red; /* Default to red for errors */
+        font-weight: bold;
+    }
+    #messageArea.success {
+        color: green;
+    }
+    #messageArea.info {
+        color: blue;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1 id="home"><a href="index.html">TTS Bench</a></h1>
+      <nav>
+        <ul>
+          <li><a href="rate.html">Rate models</a></li>
+          <li><a href="leaderboard_standard.html">Leaderboard Monologue</a></li>
+          <li><a href="leaderboard_convo.html">Leaderboard Conversational</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content">
+      <p>Listen to the audio and tell us if it's human or robotic, and how you rate it!</p>
+
+      <div id="audioTypeDisplay">Loading audio type...</div>
+
+      <div id="loadingSpinner" class="spinner-container">
+        <div class="spinner"></div>
+        <p>Loading audio...</p>
+      </div>
+
+      <audio id="audio" controls style="display: none;">
+        <source id="audioSource" type="audio/wav">
+        Your browser does not support the audio element.
+      </audio>
+
+      <div id="noAudioMessage" style="display: none;">
+          You have rated all available audio files. Thank you for your contributions!
+      </div>
+
+      <div id="messageArea"></div>
+
+      <p>Is this audio human or robotic?</p>
+      <div id="classificationButtons" class="classification-buttons">
+        <button id="humanButton" class="classification-button">Human</button>
+        <button id="robotButton" class="classification-button">Robot</button>
+      </div>
+
+      <p>How would you rate the listening experience?</p>
+      <div id="ratingButtons" class="rating-buttons">
+        <button class="ratingButton" data-rating="1">1 - Terrible</button>
+        <button class="ratingButton" data-rating="2">2 - Poor</button>
+        <button class="ratingButton" data-rating="3">3 - Average</button>
+        <button class="ratingButton" data-rating="4">4 - Good</button>
+        <button class="ratingButton" data-rating="5">5 - Excellent</button>
+      </div>
+
+      <button id="submitRating" class="submit-button">Submit Rating</button>
+    </div>
+  </main>
+
+  <script>
+  let currentFile = '';
+  let currentAudioType = '';
+  const RATED_FILES_STORAGE_KEY = 'ttsBenchRatedFiles';
+  const MAX_RATED_FILES = 200;
+
+// Function to get rated files from localStorage
+function getRatedFiles() {
+    const ratedFilesString = localStorage.getItem(RATED_FILES_STORAGE_KEY);
+    return ratedFilesString ? JSON.parse(ratedFilesString) : [];
+}
+
+// Function to save rated files to localStorage (with limit)
+function saveRatedFiles(filesArray) {
+    const filesToSave = filesArray.slice(Math.max(filesArray.length - MAX_RATED_FILES, 0));
+    localStorage.setItem(RATED_FILES_STORAGE_KEY, JSON.stringify(filesToSave));
+}
+
+// Function to display messages on the page
+function displayMessage(message, type = 'error') {
+    const messageArea = document.getElementById('messageArea');
+    messageArea.textContent = message;
+    messageArea.className = ''; // Clear existing classes
+    messageArea.classList.add(type); // Add type class for styling
+}
+
+// Function to clear messages
+function clearMessages() {
+    const messageArea = document.getElementById('messageArea');
+    messageArea.textContent = '';
+    messageArea.className = '';
+}
+
+
+// Fetch audio file and set it to the audio element
+function loadAudio() {
+  clearMessages(); // Clear messages before loading new audio
+  const ratedFiles = getRatedFiles();
+  fetch(`/api/get-audio?rated=${encodeURIComponent(JSON.stringify(ratedFiles))}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+          if (data.error === 'No unrated audio files available.') {
+              displayNoAudioMessage();
+          } else {
+              displayMessage(data.error, 'error'); // Display error message
+          }
+          document.getElementById('loadingSpinner').style.display = 'none';
+          hideRatingControls();
+          return;
+      }
+
+      const audioPath = `/audio/${data.filename}`;
+      const audioElement = document.getElementById('audioSource');
+      audioElement.src = audioPath;
+
+      const audio = document.getElementById('audio');
+      audio.load();
+
+      currentAudioType = data.type;
+      document.getElementById('audioTypeDisplay').textContent = `Audio Type: ${currentAudioType.charAt(0).toUpperCase() + currentAudioType.slice(1)}`;
+
+      document.getElementById('loadingSpinner').style.display = 'block';
+      audio.style.display = 'none';
+      showRatingControls();
+
+      audio.addEventListener('canplaythrough', () => {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        audio.style.display = 'block';
+      });
+
+      audio.addEventListener('error', () => {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        displayMessage('Error loading audio. Please try again later.', 'error'); // Display error message
+        hideRatingControls();
+      });
+
+      currentFile = data.filename.split('/').pop();
+
+      resetButtons();
+    })
+    .catch(error => {
+      console.error('Error fetching audio:', error);
+      document.getElementById('loadingSpinner').style.display = 'none';
+      displayMessage('Error fetching audio. Please try again later.', 'error'); // Display error message
+      hideRatingControls();
+    });
+}
+
+// Hide classification, rating, and submit buttons
+function hideRatingControls() {
+    document.getElementById('classificationButtons').style.display = 'none';
+    document.getElementById('ratingButtons').style.display = 'none';
+    document.getElementById('submitRating').style.display = 'none';
+    document.querySelectorAll('.content > p').forEach(p => {
+        if (p.textContent.includes('Is this audio human or robotic?') || p.textContent.includes('How would you rate the listening experience?')) {
+            p.style.display = 'none';
+        }
+    });
+}
+
+// Show classification, rating, and submit buttons
+function showRatingControls() {
+     document.getElementById('classificationButtons').style.display = 'flex';
+     document.getElementById('ratingButtons').style.display = 'flex';
+     document.getElementById('submitRating').style.display = 'block';
+     document.querySelectorAll('.content > p').forEach(p => {
+        if (p.textContent.includes('Is this audio human or robotic?') || p.textContent.includes('How would you rate the listening experience?')) {
+            p.style.display = 'block';
+        }
+    });
+}
+
+
+// Display message when no audio is available
+function displayNoAudioMessage() {
+    document.getElementById('audioTypeDisplay').style.display = 'none';
+    document.getElementById('audio').style.display = 'none';
+    document.getElementById('noAudioMessage').style.display = 'block';
+    hideRatingControls();
+}
+
+
+// Reset button states
+function resetButtons() {
+    classification = '';
+    selectedRating = null;
+    document.querySelectorAll('.classification-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.ratingButton').forEach(btn => btn.classList.remove('active'));
+}
+
+
+// Classification buttons
+let classification = '';
+document.getElementById('humanButton').addEventListener('click', () => {
+  classification = 'human';
+  toggleButtonState('humanButton');
+});
+
+document.getElementById('robotButton').addEventListener('click', () => {
+  classification = 'robot';
+  toggleButtonState('robotButton');
+});
+
+function toggleButtonState(selectedId) {
+  document.querySelectorAll('.classification-button').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(selectedId).classList.add('active');
+}
+
+// Rating buttons
+let selectedRating = null;
+const ratingButtons = document.querySelectorAll('.ratingButton');
+
+ratingButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    ratingButtons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    selectedRating = button.getAttribute('data-rating');
+  });
+});
+
+// Submission
+document.getElementById('submitRating').addEventListener('click', () => {
+  clearMessages(); // Clear messages before submission
+
+  if (!classification || !selectedRating) {
+    displayMessage('Please classify the audio and provide a rating before submitting!', 'info'); // Use message area
+    return;
+  }
+
+  fetch('/api/submit-rating', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      file: currentFile,
+      rating: selectedRating,
+      isHuman: classification,
+      type: currentAudioType
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.message) {
+         displayMessage(data.message, 'success'); // Display success message
+         const ratedFiles = getRatedFiles();
+         const fileIdentifier = `${currentAudioType}/${currentFile}`;
+         if (!ratedFiles.includes(fileIdentifier)) {
+             ratedFiles.push(fileIdentifier);
+             saveRatedFiles(ratedFiles);
+         }
+         // Use setTimeout to show message briefly before reloading
+         setTimeout(() => {
+             window.location.reload();
+         }, 1000); // Reload after 1 second
+
+    } else if (data.error) {
+         displayMessage('Error submitting rating: ' + data.error, 'error'); // Display error message
+    } else {
+         displayMessage('Unknown response from server after submission.', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error submitting rating:', error);
+    displayMessage('Error submitting rating. Please try again later.', 'error'); // Display error message
+  });
+});
+
+// Kick things off
+loadAudio();
+  </script>
+</body>
+</html>

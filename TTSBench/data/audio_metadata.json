@@ -1,0 +1,26 @@
+{
+    "ElevenLabs.mp3": { "model": "Eleven Labs Studio", "label": "robot","style": "conversational" },
+    "DIA.wav": { "model": "Dia 1.6B", "label": "robot","style": "conversational" },
+    "sesame_conversation_01.wav" : { "model": "CSM 1B", "label": "robot","style": "conversational" },
+    "ElevenLabs_Conversation.mp3" : { "model": "Eleven Labs Studio", "label": "robot","style": "conversational" },
+    "ElevenLabs_Multilingualv2.wav": { "model": "ElevenLabs Multilingual", "label": "robot","style": "standard" },
+    "ElevenLabs_Turbo.wav": { "model": "Eleven Labs Turbo", "label": "robot","style": "standard" },
+    "ElevenLabsTuboFemale.wav":{ "model": "Eleven Labs Turbo", "label": "robot","style": "standard" },
+    "ElevenFlash25.wav" : { "model": "Eleven Labs Flash v2.5", "label": "robot","style": "standard" },
+    "Kokoro.wav": { "model": "Kokoro", "label": "robot","style": "standard" },
+    "Papla.wav":{ "model": "Papla", "label": "robot","style": "standard" },
+    "CosyVoice.wav":{ "model": "CosyVoice2", "label": "robot","style": "standard" },
+    "StyleTTS2.wav":{ "model": "StyleTTS2", "label": "robot","style": "standard" },
+    "DIAPodcastIntroOld.wav":{ "model": "Dia 1.6B", "label": "robot","style": "conversational" },
+    "DIA_brainybites.wav":{ "model": "Dia 1.6B", "label": "robot","style": "conversational" },
+    "CSM_brainybites.wav":{ "model": "Dia 1.6B", "label": "robot","style": "conversational" },
+    "girlvoice.wav":{ "model": "Human", "label": "human","style": "standard" },
+    "coral-openai.wav":{ "model": "OpenAI", "label": "robot","style": "standard" },
+    "Echo_OPENAI.wav":{ "model": "OpenAI", "label": "robot","style": "standard" },
+    "Google_ORUS.wav":{ "model": "Google", "label": "robot","style": "standard" },
+    "ElevenLabs.wav":{ "model": "ElevenLabs Studio", "label": "robot","style": "conversational" },
+    "ElevenLabs_Conversation.wav":{ "model": "ElevenLabs Studio", "label": "robot","style": "conversational" },
+    "uktts.wav": { "model": "Human", "label": "human","style": "conversational" },
+    "papla_conversational.wav":{ "model": "Papla", "label": "robot","style": "conversational" }
+  }
+  

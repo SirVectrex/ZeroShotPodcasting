@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard - Monologue</title>
+  <link rel="stylesheet" href="/public/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1 id="home"><a href="index.html">TTS Bench</a></h1>
+      <nav>
+        <ul>
+          <li><a href="rate.html">Rate models</a></li>
+          <li><a href="leaderboard_standard.html">Leaderboard Monologue</a></li>
+          <li><a href="leaderboard_convo.html">Leaderboard Conversational</a></li>
+
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="content">
+      <!-- Loading Spinner -->
+      <div id="loadingSpinner" class="spinner-container">
+        <div class="spinner"></div>
+        <p>Loading leaderboard...</p>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <table class="leaderboard-table" id="leaderboardTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Avg. Rating</th>
+            <th>Labeled as Robot %</th>
+            <th>Total Votes</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // Fetch and display leaderboard data
+    fetch('/api/get-leaderboard-standard')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('leaderboardBody');
+        data.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.model}</td>
+            <td>${row.avgRating}</td>
+            <td>${row.correctness}</td>
+            <td>${row.totalVotes}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Hide loading spinner and show the leaderboard
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('leaderboardTable').style.display = 'table';
+      })
+      .catch(error => {
+        console.error('Error fetching leaderboard data:', error);
+        document.getElementById('loadingSpinner').innerHTML = 'Error loading leaderboard. Please try again later.';
+      });
+  </script>
+</body>
+</html>
