@@ -10,26 +10,17 @@ Welcome to **ZeroShotPodcasting**, a comprehensive toolkit for zero-shot podcast
 ```
 
 ZerShotPodcasting/
-├── Podcast\_Generation/        # End-to-end podcast generation pipeline (LLM + TTS)
-│   ├── generate\_podcast.py    # Main podcast generation script
-│   ├── query.txt              # Example prompt input
+├── Podcast\_Generation/       # End-to-end podcast generation pipeline (LLM + TTS)
+│   ├── ...
 │   └── readme.md              # Detailed usage and setup for podcast generation
 │
 ├── LLMBench/                  # Benchmarking and evaluation suite for LLMs
-│   ├── ARI\_Flesh.py           # Readability metrics
-│   ├── GEval\_test.py          # Script evaluation using GPT-based methods
-│   ├── age\_plot.py            # Age-appropriateness visualization
-│   ├── print\_GEVAL\_stats.py   # Evaluation stats reporting
-│   ├── wordanalysis.py        # Word and complexity analysis
-│   ├── LLM\_interaction/       # Helper modules for LLM communication
-│   ├── scripts/               # Additional scripts for benchmarking
-│   ├── SVGs/                  # Visualization assets
-│   └── readme.md              # LLMBench specific instructions
+│   ├── ...          
+│   └── readme.md              # LLMBench specific instructions and overview
 │
 ├── TTSBench/                  # Benchmarking and analysis tools for TTS systems
-│   ├── scripts/               # Automation and benchmarking scripts
-│   ├── plots/                 # Performance and analysis plots
-│   └── readme.md              # TTSBench usage and setup guide
+│   ├── ...             
+│   └── readme.md              # TTSBench usage, setup guide, explanation
 │
 └── README.md                  # (You are here!) Monorepo overview and setup guide
 
@@ -42,7 +33,6 @@ ZerShotPodcasting/
 - **Multi-speaker Dialogue TTS:** Produce high-quality audio using Dia 1.6B TTS with voice cloning and dialogue modes.
 - **Automated Script Evaluation:** Evaluate podcast scripts for coherence, topic relevance, and audience appropriateness with GPT-powered judging.
 - **Comprehensive Benchmarking:** Evaluate both LLMs and TTS systems for quality, readability, and audience fit.
-- **Visualization & Analysis:** Plot and analyze LLM outputs and TTS performance metrics.
 - **Modular & Extensible:** Easily swap or add new LLMs or TTS engines with a clean modular design.
 
 
@@ -70,8 +60,6 @@ ZerShotPodcasting/
 ### TTSBench
 
 * Benchmark TTS systems including Dia-TTS.
-* Generate plots for audio quality metrics.
-* Automate testing and comparisons across engines.
 
 ### Podcast Generation
 
@@ -85,6 +73,6 @@ ZerShotPodcasting/
 ## 💡 Acknowledgements
 
 * OpenAI for GPT models and APIs
-* Dia-TTS-Server for powerful voice cloning and dialogue TTS
+* Dia-TTS-Server, CSM for powerful voice cloning and dialogue TTS
 * All contributors and open-source libraries powering this project
 
