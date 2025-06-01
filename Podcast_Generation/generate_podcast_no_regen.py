@@ -2,6 +2,8 @@
 This script generates a podcast script using OpenAI's GPT-4o model and converts it to audio using Google's Gemini TTS.
 It reads a text file containing a query, generates a script based on that query, and then synthesizes the script into audio format.
 
+Unlike the original script, this version does not trigger regeneration of script but stops. This is useful for testing or when you want to generate a podcast without re-evaluating the script.
+
 Sample usage:
 python generate_podcast.py --input_file data/query.txt --output_file output_conversation.wav
 
@@ -158,50 +160,33 @@ def main():
     parser = argparse.ArgumentParser(description="Generate podcast script and audio if validation passes.")
     parser.add_argument('--input_file', required=True, help='Path to input .txt file')
     parser.add_argument('--output_file', required=True, help='Filename for output .wav file')
-    parser.add_argument('--max_attempts', type=int, default=5, help='Max script regeneration attempts if checks fail')
     args = parser.parse_args()
 
     print("Reading input query...")
     input_query = read_query(args.input_file)
 
-    attempt = 1
-    passed = False
+    print("Generating podcast script...")
+    script = generate_script_from_openai(input_query)
 
-    while attempt <= args.max_attempts:
-        print(f"\nAttempt #{attempt} to generate and validate podcast...\n")
+    print("Running validation checks...")
 
-        print("Generating podcast script...")
-        script = generate_script_from_openai(input_query)
+    if not check_word_count_limit(script, input_query):
+        print("❌ Script is too long for target episode length. Skipping TTS.")
+        return
 
-        print("Running validation checks...")
+    if not check_readability(script, input_query):
+        print("❌ Script readability is not appropriate for the target audience. Skipping TTS.")
+        return
 
-        if not check_word_count_limit(script, input_query):
-            print("Word count too long. Retrying...\n")
-            attempt += 1
-            continue
+    score = evaluate_podcast(input_query, script)
+    if score < EVAL_THRESHOLD:
+        print(f"❌ G-Eval score {score:.2f} is below threshold of {EVAL_THRESHOLD}. Skipping TTS.")
+        return
 
-        if not check_readability(script, input_query):
-            print("Readability inappropriate for audience. Retrying...\n")
-            attempt += 1
-            continue
-
-        score = evaluate_podcast(input_query, script)
-        if score < EVAL_THRESHOLD:
-            print(f"G-Eval score {score:.2f} below threshold. Retrying...\n")
-            attempt += 1
-            continue
-
-        # All checks passed
-        print("All checks passed! Proceeding to TTS...")
-        audio_data = generate_audio_from_gemini(script)
-        save_wave_file(args.output_file, audio_data)
-        print(f"Podcast audio saved to '{args.output_file}'")
-        passed = True
-        break
-
-    if not passed:
-        print(f"Failed to generate a valid script after {args.max_attempts} attempts.")
-
+    print("All checks passed. Generating audio...")
+    audio_data = generate_audio_from_gemini(script)
+    save_wave_file(args.output_file, audio_data)
+    print(f"Podcast generated and saved to '{args.output_file}'")
 
 if __name__ == "__main__":
     main()

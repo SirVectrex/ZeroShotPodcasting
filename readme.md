@@ -3,6 +3,8 @@
 
 Welcome to **ZeroShotPodcasting**, a comprehensive toolkit for zero-shot podcast script generation, evaluation, and text-to-speech (TTS) synthesis — all powered by advanced large language models (LLMs) and state-of-the-art TTS engines.
 
+*Note:* The Google TTS API was introduced very shortly before paper submission - the Paper submission state of the repository was freezed as a release. The change after paper submission include: support of Google TTS API, Jupyter notebook for interactive podcast generation, and a few minor bug fixes. 
+
 
 
 ## 📂 Repository Structure
@@ -11,7 +13,9 @@ Welcome to **ZeroShotPodcasting**, a comprehensive toolkit for zero-shot podcast
 
 ZerShotPodcasting/
 ├── Podcast\_Generation/        # End-to-end podcast generation pipeline (LLM + TTS)
-│   ├── generate\_podcast.py    # Main podcast generation script
+│   ├── generate\_podcast.py    # Main podcast generation script with Google TTS
+│   ├── generate\_podcast\_no\_regen.py # Podcast generation without regeneration on failure
+│   ├── NotebookGeneration.ipynb # Jupyter notebook for interactive podcast generation
 │   ├── query.txt              # Example prompt input
 │   └── readme.md              # Detailed usage and setup for podcast generation
 │
@@ -55,7 +59,8 @@ ZerShotPodcasting/
 - Install dependencies (see individual subfolder `readme.md` files for details)
 - API keys and local servers:
   - OpenAI API key for LLM interactions (set environment variable `OPENAI_API_KEY`)
-  - Dia-TTS server running locally or remotely (default: `http://localhost:8003/tts`)
+  - Google TTS API key (set environment variable `GOOGLE_API_KEY`)
+  - optionally Dia-TTS server running locally or remotely (default: `http://localhost:8003/tts`)
 
 
 ## 🧩 Module Details
